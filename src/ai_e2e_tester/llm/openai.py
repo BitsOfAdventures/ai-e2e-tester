@@ -5,11 +5,12 @@ from typing import List, Dict
 import openai
 
 from ai_e2e_tester.browser.next_step import NextStep
+from ai_e2e_tester.llm.ai_wrapper import AiWrapper
 
 logger = logging.getLogger('ai-e2e-tester.llm')
 
 
-class OpenAiWrapper:
+class OpenAiWrapper(AiWrapper):
     """
     A wrapper to call the LLM.
     Currently only OpenAI is supported.
