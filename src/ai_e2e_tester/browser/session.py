@@ -63,6 +63,7 @@ class BrowserSession:
                 # Check again
                 curr_domain = self.get_current_domain()
                 if curr_domain != main_domain:
+                    # @todo Directly navigate to main domain page
                     logger.error("❗ Still not on main domain after going back. Ending test here.")
                     return False
                 else:
