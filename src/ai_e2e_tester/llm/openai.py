@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import List
+from typing import List, Dict
 
 import openai
 
@@ -20,7 +20,7 @@ class OpenAiWrapper:
         self.user_prompt_template = user_prompt_template
         self.client = openai.OpenAI(api_key=api_key)
 
-    def run(self, page_html, screenshot_b64, prev_steps: List[NextStep]):
+    def run(self, page_html: str, screenshot_b64, prev_steps: List[NextStep]) -> Dict:
         """
         @todo Will be better to interact with screenshot instead of text to also access style.
         @todo Add system prompt to config file

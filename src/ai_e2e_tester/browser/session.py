@@ -29,10 +29,10 @@ class BrowserSession:
         self.page.go_back()
         self.page.wait_for_load_state('load')
 
-    def get_page_text(self):
+    def get_page_text(self) -> str:
         return self.page.evaluate("() => document.body.innerText")
 
-    def get_page_html(self):
+    def get_page_html(self) -> str:
         return self.page.content()
 
     def get_screenshot(self, path):
