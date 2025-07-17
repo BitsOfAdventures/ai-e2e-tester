@@ -1,0 +1,5 @@
+docopt # Parse command line parameters
+playwright # Run a browser and programmatically interact with it
+openai # API for Open AI LLM
+pyyaml # Read settings from yml file
+rich # Write console reports
