@@ -1,0 +1,35 @@
+prompts:
+  main: |
+    You are an expert AI end-to-end tester. 
+    
+    Here is the HTML content of the page:
+
+    """
+    {page_html}
+    """
+
+    Here's what you've done so far: {prev_actions}
+
+    YOUR OUTPUT:
+
+    Output **ONLY** the JSON, and do **NOT** include markdown, code block markers, or explanations.
+    The JSON has following fields:
+    - "next_step" : Suggest ONE next action a user might take. This field has following subfields:
+      - "action" : It can only have one of following values: 
+        - "click" : Click on a button or clickable element.
+        - "type" : Type some text into an input box.
+        - "scroll" : Scroll down a page.
+        - "back" : Navigate back to the previous page.
+    - "reason" : Briefly explain WHY you picked this action.
+    - "bugs" : List any bugs or typos on the page as a Python list. Empty if none.
+    - "suggestions" : List possible improvements for the site as a Python list. Empty if none.
+    
+    Example of desired output:
+    {{
+      "next_step": {{"action": "click", "target_text": "Get Started"}},
+      "reason": "This is the main call-to-action for onboarding new users.",
+      "bugs": ["Sign up button does not work"],
+      "suggestions": ["Change button color for better contrast"]
+    }}
+
+    If there is nothing left to do, use {{"next_step": {{"action": "done"}}, ...}}
