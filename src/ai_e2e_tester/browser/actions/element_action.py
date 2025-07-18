@@ -17,17 +17,26 @@ class BrowserElementAction(BrowserAction):
 
     def get_element(self, page: Page) -> ElementHandle | None:
         """
-        Attempts to locate the element of the html to interact with based on tips from the LLM
-        :return:
+        Attempts to locate the element to interact with, based on LLM suggestions.
+        Uses multiple selector strategies. Logs a warning if multiple elements are found.
+        Returns the first matching element, or None.
+        @todo The LLM needs to return a more specific element selector if ID is not available.
         """
-        try:
-            # 1. Try by id
-            el = page.query_selector(f'#{self.target_text}')
+        selector_strategies = [
+            lambda t: f'#{t}',  # By id
+            lambda t: f'text="{t}"',  # By visible text
+        ]
 
-            # 2. Trying by element text
-            if not el:
-                el = page.query_selector(f'text="{self.target_text}"')
+        for make_selector in selector_strategies:
+            selector = make_selector(self.target_text)
+            try:
+                elements = page.query_selector_all(selector)
+                if elements:
+                    if len(elements) > 1:
+                        logger.warning(f"Multiple elements found with selector '{selector}'; using the first one.")
+                    return elements[0]
+            except Exception as e:
+                logger.debug(f"Selector '{selector}' failed: {e}")
 
-            return el
-        except Exception as e:
-            logger.exception(e)
+        return None
+
