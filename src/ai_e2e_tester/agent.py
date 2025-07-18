@@ -32,7 +32,7 @@ class TestingAgent:
         self.wait_between_steps = 0.5
 
     def run(self, max_steps: int):
-        logger.info("Test started.")
+        logger.info(f"Test started. Max steps: {max_steps}")
         browser_session = BrowserSession(self.url, headless=True)
         browser_session.goto_url(self.url)
 
