@@ -6,6 +6,7 @@ from ai_e2e_tester.browser.actions.browser_action import BrowserAction
 from ai_e2e_tester.browser.actions.click_action import ClickAction
 from ai_e2e_tester.browser.actions.scroll_action import ScrollAction
 from ai_e2e_tester.browser.actions.type_action import TypeAction
+from ai_e2e_tester.browser.actions.wait_action import WaitAction
 
 logger = logging.getLogger('ai-e2e-tester.browser.next_step')
 
@@ -44,6 +45,8 @@ class NextStep:
             return ScrollAction()
         elif action_name == 'back':
             return BackAction()
+        elif action_name =='wait':
+            return WaitAction(wait_time_sec=next_step["wait_time_sec"])
         elif action_name == 'done':
             return None
         else:
