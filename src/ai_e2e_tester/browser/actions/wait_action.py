@@ -7,6 +7,7 @@ logger = logging.getLogger('ai-e2e-tester.browser.actions.wait')
 
 
 class WaitAction(BrowserAction):
+    name = 'wait'
 
     def __init__(self, wait_time_sec: str = "5"):
         self.wait_time_ms = wait_time_sec

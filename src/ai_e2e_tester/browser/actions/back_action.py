@@ -6,6 +6,7 @@ logger = logging.getLogger('ai-e2e-tester.browser.actions.back')
 
 
 class BackAction(BrowserAction):
+    name = 'back'
 
     def __str__(self):
         return f"Navigating back to previous page."

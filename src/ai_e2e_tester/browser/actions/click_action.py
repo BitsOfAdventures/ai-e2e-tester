@@ -11,6 +11,7 @@ class ClickAction(BrowserElementAction):
     """
     Click on buttons and links.
     """
+    name = 'click'
 
     def __init__(self, target_text: str):
         super().__init__(target_text)

@@ -6,6 +6,7 @@ logger = logging.getLogger('ai-e2e-tester.browser.actions.scroll')
 
 
 class ScrollAction(BrowserAction):
+    name = 'scroll'
 
     def __init__(self, scroll_amount=2000):
         self.scroll_amount = scroll_amount

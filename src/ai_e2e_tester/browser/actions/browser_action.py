@@ -7,6 +7,7 @@ logger = logging.getLogger('ai-e2e-tester.browser.actions')
 
 
 class BrowserAction(ABC):
+    name: str = 'llm_action_name'
 
     def run(self, page: Page) -> str:
         """

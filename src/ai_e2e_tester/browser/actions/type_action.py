@@ -6,6 +6,7 @@ logger = logging.getLogger('ai-e2e-tester.browser.actions.type')
 
 
 class TypeAction(BrowserElementAction):
+    name = 'type'
 
     def __init__(self, target_text: str, value: str = None):
         super().__init__(target_text)
