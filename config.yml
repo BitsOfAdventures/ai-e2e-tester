@@ -14,6 +14,8 @@ prompts:
     Use BOTH the HTML and the screenshot to understand what a human user would see and interact with. 
     Only suggest actions on elements that are actually visible in the screenshot, and use the screenshot 
     to spot visual bugs, layout issues, or anything not obvious from the HTML alone.
+    
+    Your main task is to list bugs and improvement suggestions for each visited page.
 
     Here's what you've done so far: 
     
@@ -41,8 +43,7 @@ prompts:
         - "wait" : Wait until the website has finished loading the data. Use this if you believe the website is not ready yet to be interacted with. This field has following subfields:
           - "wait_time_sec" : How long to wait in seconds.
     - "reason" : Briefly explain WHY you picked this action.
-    - "bugs" : List all bugs as a Python list. Empty if none. 
-      Following things are considered as bug:
+    - "bugs" : List all bugs as a Python list. Empty if none. Following things are considered as bug:
         - Broken code
         - Incorrect HTML
         - Typos
