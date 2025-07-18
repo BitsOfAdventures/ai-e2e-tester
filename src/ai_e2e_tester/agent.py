@@ -1,6 +1,7 @@
 import logging
 import time
-from typing import List
+from collections import defaultdict
+from typing import List, Dict
 
 from ai_e2e_tester.browser.session import BrowserSession
 from ai_e2e_tester.browser.visited_page import VisitedPage
@@ -13,8 +14,7 @@ logger = logging.getLogger('ai-e2e-tester.agent')
 
 class TestingAgent:
     """
-    @todo Don't repeat feedback when revisiting same page. Pass previous feedback for same page in prompt.
-    @todo Make sure the llm only tries to interact with things currently visible on the page.
+    The TestingAgent is an intermediary allowing the LLM to use the web browser.
     """
 
     def __init__(self, url, api_key, config_path):
@@ -39,30 +39,53 @@ class TestingAgent:
         for step_idx in range(max_steps):
 
             # Guard BEFORE LLM
+            # @todo Inform LLM that we navigated back after leaving domain.
             if not browser_session.ensure_stay_on_domain():
                 break
 
-            logger.info(f'[{step_idx + 1}] Page: {browser_session.url}')
+            logger.info(f'[Step {step_idx + 1}] On Page: {browser_session.url}')
 
             text = browser_session.get_page_html()
             screenshot_b64 = browser_session.get_screenshot(path=f"reports/screenshot_{step_idx + 1}.png")
 
             result = self.llm.run(
+                page_url=browser_session.url,
                 page_html=text,
                 screenshot_b64=screenshot_b64,
-                prev_steps=[page.next_step for page in self.visited_pages]
+                context=self._generate_llm_context()
             )
 
             visited_page = VisitedPage.from_json(browser_session.page, result)
+            logger.info(f'{visited_page.summary}')
             self.visited_pages.append(visited_page)
 
             if visited_page.has_next_step():
                 visited_page.run_next_step(browser_session)
             else:
-                logger.info("→ Done! Nothing more to do.")
+                logger.info("The LLM has decided that there is nothing more to do.")
                 break
             time.sleep(self.wait_between_steps)
 
         browser_session.close()
         logger.info("Test finished.")
-        self.reporter.print_report(self.visited_pages)
+        grouped_visits = self._get_grouped_visits()
+        self.reporter.print_report(grouped_visits)
+
+    def _get_grouped_visits(self) -> Dict[str, List[VisitedPage]]:
+        grouped_visits = defaultdict(list)
+        for page in self.visited_pages:
+            grouped_visits[page.page_url].append(page)
+        return grouped_visits
+
+    def _get_past_visits_for_url(self, url: str) -> List[VisitedPage]:
+        return self._get_grouped_visits().get(url)
+
+    @classmethod
+    def _generate_llm_visit_summary(cls, visited_page: VisitedPage) -> str:
+        return f"""
+        You visited the URL {visited_page.page_url}. 
+        You found these bugs: {visited_page.bugs} and provided these suggestions: {visited_page.suggestions}. 
+        You decided to perform this action: {visited_page.next_step}"""
+
+    def _generate_llm_context(self) -> str:
+        return "\nthen\n".join([self._generate_llm_visit_summary(visited_page) for visited_page in self.visited_pages])

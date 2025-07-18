@@ -1,10 +1,9 @@
 import json
 import logging
-from typing import List, Dict
+from typing import Dict
 
 import openai
 
-from ai_e2e_tester.browser.next_step import NextStep
 from ai_e2e_tester.llm.ai_wrapper import AiWrapper
 
 logger = logging.getLogger('ai-e2e-tester.llm')
@@ -21,26 +20,33 @@ class OpenAiWrapper(AiWrapper):
         self.user_prompt_template = user_prompt_template
         self.client = openai.OpenAI(api_key=api_key)
 
-    def run(self, page_html: str, screenshot_b64, prev_steps: List[NextStep]) -> Dict:
+    def run(self, page_url: str, page_html: str, screenshot_b64, context: str) -> Dict:
         """
-        @todo Will be better to interact with screenshot instead of text to also access style.
         @todo Add system prompt to config file
-        :param prev_steps:
+        :param page_url:
+        :param context:
         :param page_html:
         :param screenshot_b64:
         :return:
         """
 
         user_prompt = self.user_prompt_template.format(
+            page_url=page_url,
             page_html=page_html,
-            prev_actions=" then ".join([str(step) for step in prev_steps])
+            context=context
         )
 
         response = self.client.chat.completions.create(
             model="gpt-4o",
             messages=[
                 {"role": "system", "content": "You are a smart website tester."},
-                {"role": "user", "content": user_prompt},
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": user_prompt},
+                        {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot_b64}"}}
+                    ]
+                }
             ],
             max_tokens=self.max_tokens,
             temperature=0.2,
