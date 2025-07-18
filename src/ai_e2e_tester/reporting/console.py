@@ -17,13 +17,9 @@ class ConsoleReporter:
         for page_url, visited_pages in grouped_visits.items():
             print(f'Page: {page_url}')
             print('Bugs:')
-            for visited_page in visited_pages:
-                for bug in visited_page.bugs:
-                    print(f'\t- {bug}')
+            [print(f'\t- {bug}') for bug in {bug for vp in visited_pages for bug in vp.bugs}]
 
             print('Suggestions:')
-            for visited_page in visited_pages:
-                for suggestion in visited_page.suggestions:
-                    print(f'\t- {suggestion}')
+            [print(f'\t- {sg}') for sg in {sg for vp in visited_pages for sg in vp.suggestions}]
 
             print('---\n')
