@@ -5,5 +5,5 @@ from ai_e2e_tester.browser.next_step import NextStep
 
 
 class AiWrapper(ABC):
-    def run(self, page_html: str, screenshot_b64, prev_steps: List[NextStep]) -> Dict:
+    def run(self, page_url: str, page_html: str, screenshot_b64, prev_steps: List[NextStep]) -> Dict:
         pass
