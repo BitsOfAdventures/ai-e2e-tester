@@ -1,5 +1,4 @@
-from collections import defaultdict
-from typing import List
+from typing import List, Dict
 
 from rich.console import Console
 
@@ -11,14 +10,10 @@ class ConsoleReporter:
     def __init__(self):
         self.console = Console()
 
-    def print_report(self, all_visited_pages: List[VisitedPage]):
+    def print_report(self, grouped_visits: Dict[str, List[VisitedPage]]):
         """
         Prints a summary report of all visited pages.
         """
-        grouped_visits = defaultdict(list)
-        for page in all_visited_pages:
-            grouped_visits[page.page_url].append(page)
-
         for page_url, visited_pages in grouped_visits.items():
             print(f'Page: {page_url}')
             print('Bugs:')
