@@ -41,3 +41,11 @@ python -m src.ai_e2e_tester --url=https://example.com
 ## 💬 Feedback Wanted
 This is an early prototype. If you try it, please open an issue or suggest improvements, any feedback is appreciated!
 
+## Currently Supported Actions
+Here is what the agent can currently do on the tested website:
+
+- Click on links, buttons, etc..
+- Type text into input fields
+- Navigate to the previous page
+- Scroll down
+- Wait while the page is loading data from the server
