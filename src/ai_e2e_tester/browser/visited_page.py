@@ -12,6 +12,7 @@ class VisitedPage:
     It is used to write reports at the end.
     """
     page_url: str
+    summary: str
     suggestions: List[str]
     bugs: List[str]
     next_step: NextStep
@@ -26,6 +27,7 @@ class VisitedPage:
     def from_json(cls, page, result: Dict) -> "VisitedPage":
         return VisitedPage(
             page_url=page.url,
+            summary=result.get("summary"),
             next_step=NextStep.from_json(
                 result.get("next_step", {"action": "done"}),
                 result.get("reason", "")
