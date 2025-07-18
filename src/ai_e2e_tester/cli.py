@@ -28,5 +28,6 @@ def main():
         return
     config_path = args.get("--config") or "config.yml"
     max_steps = int(args['--max-steps'])
+
     agent = TestingAgent(url, api_key, config_path)
     agent.run(max_steps=max_steps)
