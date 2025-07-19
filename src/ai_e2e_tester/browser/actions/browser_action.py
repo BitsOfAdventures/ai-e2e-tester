@@ -27,9 +27,18 @@ class BrowserAction(ABC):
 
     @classmethod
     def describe_for_llm(cls):
-        doc = f'- "{cls.name}": {cls.description}'
+        """
+        Returns a string describing the action and its 'params' fields for the LLM.
+            Example output:
+
+            - "click": Click on a button or clickable element.
+              params:
+                - "target_text": The element's id or visible text.
+        """
+        doc = f'- "{cls.name}": {cls.description}\n'
         if cls.input_fields:
-            doc += " This field has following subfields:\n"
-            for k, v in cls.input_fields.items():
-                doc += f'    - "{k}": {v}\n'
+            doc += "  params:\n"
+            for k, desc in cls.input_fields.items():
+                doc += f'    - "{k}": {desc}\n'
         return doc
+

@@ -34,10 +34,15 @@ class NextStep:
         """
         action_type = next_step.get("action")
         action_class = ACTION_REGISTRY.get(action_type)
+
+        if action_type == 'done':
+            logger.info("The LLM has decided that there is nothing more to do.")
+            return None
+
         if not action_class:
             logger.warning(f"Unknown action type:{action_type}")
             return None
-        return action_class(**{k: v for k, v in next_step.items() if k != "action"})
+        return action_class(**{k: v for k, v in next_step.get('params', {}).items()})
 
     @classmethod
     def from_json(cls, data: Dict, reason: str):
