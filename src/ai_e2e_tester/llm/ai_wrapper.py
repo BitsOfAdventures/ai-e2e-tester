@@ -1,9 +1,7 @@
 from abc import ABC
-from typing import List, Dict
-
-from ai_e2e_tester.browser.next_step import NextStep
+from typing import Dict
 
 
 class AiWrapper(ABC):
-    def run(self, page_url: str, page_html: str, screenshot_b64, prev_steps: List[NextStep]) -> Dict:
+    def run(self, page_url: str, page_html: str, screenshot_b64, context: str, available_actions: str) -> Dict:
         pass

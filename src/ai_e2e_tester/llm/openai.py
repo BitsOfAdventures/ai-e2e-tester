@@ -20,20 +20,22 @@ class OpenAiWrapper(AiWrapper):
         self.user_prompt_template = user_prompt_template
         self.client = openai.OpenAI(api_key=api_key)
 
-    def run(self, page_url: str, page_html: str, screenshot_b64, context: str) -> Dict:
+    def run(self, page_url: str, page_html: str, screenshot_b64, context: str, available_actions:str) -> Dict:
         """
         @todo Add system prompt to config file
         :param page_url:
         :param context:
         :param page_html:
         :param screenshot_b64:
+        :param available_actions
         :return:
         """
 
         user_prompt = self.user_prompt_template.format(
             page_url=page_url,
             page_html=page_html,
-            context=context
+            context=context,
+            available_actions=available_actions
         )
 
         response = self.client.chat.completions.create(
