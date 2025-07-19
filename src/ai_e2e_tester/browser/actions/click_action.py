@@ -12,6 +12,10 @@ class ClickAction(BrowserElementAction):
     Click on buttons and links.
     """
     name = 'click'
+    description = 'Click on a button or clickable element.'
+    input_fields = {
+        "target_text": "Use the clickable element's exact `id` value if it has one. If there is no `id`, use exact visible text shown on the button, link, or element you want to interact with."
+    }
 
     def __init__(self, target_text: str):
         super().__init__(target_text)

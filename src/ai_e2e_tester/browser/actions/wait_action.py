@@ -8,6 +8,10 @@ logger = logging.getLogger('ai-e2e-tester.browser.actions.wait')
 
 class WaitAction(BrowserAction):
     name = 'wait'
+    description = 'Wait until the website has finished loading the data. Use this if you believe the website is not ready yet to be interacted with.'
+    input_fields = {
+        "wait_time_sec": "How long to wait in seconds."
+    }
 
     def __init__(self, wait_time_sec: str = "5"):
         self.wait_time_ms = wait_time_sec
