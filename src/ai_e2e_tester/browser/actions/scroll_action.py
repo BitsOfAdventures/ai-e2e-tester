@@ -6,6 +6,10 @@ logger = logging.getLogger('ai-e2e-tester.browser.actions.scroll')
 
 
 class ScrollAction(BrowserAction):
+    """
+    Scrolls on the page.
+    @todo Add scroll_amount param for the llm to specify scroll amount and direction.
+    """
     name = 'scroll'
     description = 'Scroll down a page.'
 
