@@ -19,13 +19,12 @@ class TestingAgent:
     The TestingAgent is an intermediary allowing the LLM to use the web browser.
     """
 
-    def __init__(self, url, api_key, config_path):
+    def __init__(self, url, config_path):
 
         self.url = url
-        self.api_key = api_key
         self.config = load_config(config_path)
         self.prompt_template = self.config['prompts']['main']
-        self.llm = OpenAiWrapper(api_key, self.prompt_template)
+        self.llm = OpenAiWrapper(self.prompt_template)
 
         self.reporter = ConsoleReporter()
 
