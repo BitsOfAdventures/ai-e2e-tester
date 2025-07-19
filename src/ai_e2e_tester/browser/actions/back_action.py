@@ -16,4 +16,4 @@ class BackAction(BrowserAction):
         logger.info(f'Navigating back to previous page.')
         page.go_back()
         page.wait_for_load_state('load')
-        return f"Navigated back to previous page."
+        return "Success."

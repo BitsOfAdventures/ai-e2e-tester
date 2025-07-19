@@ -23,4 +23,4 @@ class HoverAction(BrowserElementAction):
             return f'Could not find element to hover: "{self.target_text}"'
 
         el.hover()
-        return f"Hovered over '{self.target_text}'."
+        return "Success."

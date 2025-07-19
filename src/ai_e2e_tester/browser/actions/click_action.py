@@ -35,7 +35,7 @@ class ClickAction(BrowserElementAction):
         logger.info(f"Clicking on {self.target_text}")
         el.click()
         page.wait_for_load_state('load')
-        return "Click was successful."
+        return "Success."
 
     @classmethod
     def _force_same_tab_open(cls, page: Page, el: ElementHandle):
