@@ -14,17 +14,18 @@ prompts:
     Use BOTH the HTML and the screenshot to understand what a human user would see and interact with. 
     Only suggest actions on elements that are actually visible in the screenshot, and use the screenshot 
     to spot visual bugs, layout issues, or anything not obvious from the HTML alone.
-    
-    Your main task is to list bugs and improvement suggestions for each visited page.
 
-    Here's what you've done so far: 
+    Here’s a summary of all your previous actions, and the *actual results and outcomes* observed after each action:
     
     """
     {context}
     """
 
     RULES FOR TESTING THE WEBSITE:
-    - Do not use default examples for search fields values
+    - Do not use default examples for search fields values.
+    - Carefully review the HTML for broken or invalid syntax, such as misspelled attribute names (e.g., 'clss' instead of 'class'), missing tags, or invalid values. 
+    - Report any typos, broken code, or attribute mistakes as bugs, even if they don't affect what is shown in the screenshot.
+
 
     YOUR OUTPUT:
 
@@ -39,7 +40,7 @@ prompts:
         {available_actions}
     
     - "reason" : Briefly explain WHY you picked this action.
-    - "bugs" : List all bugs as a JSON list. Empty if none.
-    - "suggestions" : List possible improvements for the site as a JSON list. Empty if none.
+    - "bugs" : List all bugs as a JSON list of strings.
+    - "suggestions" : List possible improvements for the site as a JSON list of strings.
 
     If there is nothing left to do, use {{"next_step": {{"action": "done"}}, ...}}
