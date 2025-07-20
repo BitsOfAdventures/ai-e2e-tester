@@ -19,7 +19,4 @@ class WaitAction(BrowserAction):
     def run(self, page) -> str:
         logger.info(f"→ Waiting {self.wait_time_ms}sec for the page to be ready")
         time.sleep(int(self.wait_time_ms))
-        return "Success."
-
-    def __str__(self):
-        return f"Waiting for {self.wait_time_ms}sec."
+        return f"Waited for {self.wait_time_ms}sec."

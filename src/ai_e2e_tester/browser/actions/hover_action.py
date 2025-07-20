@@ -12,9 +12,6 @@ class HoverAction(BrowserElementAction):
         "target_text": "Use the element's exact `id` if present; otherwise, use the exact visible text on the element you want to hover over."
     }
 
-    def __str__(self):
-        return f"Hovered over {self.target_text}"
-
     def run(self, page) -> str:
         el = self.get_element(page)
         logger.info(f'→ Hovering over: {self.target_text}')
@@ -23,4 +20,4 @@ class HoverAction(BrowserElementAction):
             return f'Could not find element to hover: "{self.target_text}"'
 
         el.hover()
-        return "Success."
+        return f"Hovered over {self.target_text}"

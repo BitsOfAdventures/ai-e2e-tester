@@ -23,6 +23,13 @@ class VisitedPage:
     def has_next_step(self):
         return self.next_step.browser_action is not None
 
+    def get_llm_visit_summary(self) -> str:
+        return f"""
+        Visited page at URL {self.page_url}.
+        Page summary: {self.summary} 
+        You found these bugs: {self.bugs} and provided these suggestions: {self.suggestions}. 
+        {self.next_step.get_llm_step_summary()}"""
+
     @classmethod
     def from_json(cls, page, result: Dict) -> "VisitedPage":
         return VisitedPage(

@@ -86,15 +86,8 @@ class TestingAgent:
             grouped_visits[clean_url].append(page)
         return grouped_visits
 
-    @classmethod
-    def _generate_llm_visit_summary(cls, visited_page: VisitedPage) -> str:
-        return f"""
-        You visited the URL {visited_page.page_url}. 
-        You found these bugs: {visited_page.bugs} and provided these suggestions: {visited_page.suggestions}. 
-        You decided to perform this action: {visited_page.next_step}"""
-
     def _generate_llm_context(self) -> str:
-        return "\nthen\n".join([self._generate_llm_visit_summary(visited_page) for visited_page in self.visited_pages])
+        return "\n".join(visited_page.get_llm_visit_summary() for visited_page in self.visited_pages)
 
     @classmethod
     def _generate_llm_available_actions(cls) -> str:

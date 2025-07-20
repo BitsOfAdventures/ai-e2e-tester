@@ -19,7 +19,5 @@ class ScrollAction(BrowserAction):
     def run(self, page) -> str:
         logger.info("→ Scrolling down")
         page.mouse.wheel(0, self.scroll_amount)
-        return "Success."
-
-    def __str__(self):
         return f"Scrolled down the page."
+

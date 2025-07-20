@@ -20,9 +20,6 @@ class ClickAction(BrowserElementAction):
     def __init__(self, target_text: str):
         super().__init__(target_text)
 
-    def __str__(self):
-        return f"Clicked on {self.target_text}"
-
     def run(self, page: Page) -> str:
         el = self.get_element(page)
 
@@ -35,7 +32,7 @@ class ClickAction(BrowserElementAction):
         logger.info(f"Clicking on {self.target_text}")
         el.click()
         page.wait_for_load_state('load')
-        return "Success."
+        return f"Clicked on {self.target_text}"
 
     @classmethod
     def _force_same_tab_open(cls, page: Page, el: ElementHandle):

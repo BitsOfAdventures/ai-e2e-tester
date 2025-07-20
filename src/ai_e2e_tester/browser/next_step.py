@@ -10,20 +10,47 @@ logger = logging.getLogger('ai-e2e-tester.browser.next_step')
 class NextStep:
     reason: str
     browser_action: BrowserAction | None = None
-    action_feedback: str = None
+    action_feedback: Dict[str, str] = {}
 
     def __init__(self, reason: str, data: Dict):
         self.reason = reason
         self.browser_action = self._get_action(data)
 
-    def __str__(self):
-        if self.browser_action:
-            return f"Executed {self.browser_action} with result {self.action_feedback}"
-        return "No browser action to run."
+    @classmethod
+    def get_state_snapshot(cls, page):
+        return {
+            "url": page.url,
+            "content": page.content()
+        }
+
+    @classmethod
+    def compare_state(cls, before, after):
+        if after["url"] != before["url"]:
+            return "Navigated to new URL."
+        elif after["content"] != before["content"]:
+            return "Page content updated."
+        else:
+            return "No visible change detected."
 
     def run(self, page):
         logger.info(f"Reasoning for Next Action: {self.reason}")
-        self.action_feedback = self.browser_action.run(page=page)
+        before = self.get_state_snapshot(page)
+        result_msg = self.browser_action.run(page=page)
+        after = self.get_state_snapshot(page)
+        state_msg = self.compare_state(before, after)
+        self.action_feedback = {
+            "action_result": result_msg,
+            "state_change": state_msg
+        }
+
+    def get_llm_step_summary(self):
+        if self.browser_action:
+            return f"""
+            This is what you did: {self.action_feedback['action_result']}
+            This is what happened after you did it: {self.action_feedback['state_change']}
+            This is why you did this action: {self.reason}
+            """
+        return "There was no more actions to do."
 
     @classmethod
     def _get_action(cls, next_step: Dict) -> BrowserAction | None:

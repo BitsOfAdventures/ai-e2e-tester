@@ -17,9 +17,6 @@ class TypeAction(BrowserElementAction):
         super().__init__(target_text)
         self.value = value
 
-    def __str__(self):
-        return f"Typed {self.value} on input{self.target_text}"
-
     def run(self, page) -> str:
         el = self.get_element(page)
         logger.info(f'→ Typing in: {self.target_text} value: {self.value}')
@@ -29,4 +26,4 @@ class TypeAction(BrowserElementAction):
             return f'Could not find input for "{self.target_text}"'
 
         el.type(self.value)
-        return "Success."
+        return f"Typed {self.value} into {self.target_text}"
