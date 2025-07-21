@@ -25,6 +25,8 @@ prompts:
     - Do not use default examples for search fields values.
     - Carefully review the HTML for broken or invalid syntax, such as misspelled attribute names (e.g., 'clss' instead of 'class'), missing tags, or invalid values. 
     - Report any typos, broken code, or attribute mistakes as bugs, even if they don't affect what is shown in the screenshot.
+    - Do not suggest the same action on the same target more than once if it has already been attempted and did not produce a result.
+    - If you try an action and it fails or does not produce a visible change, do not try the same action again.
 
 
     YOUR OUTPUT:
