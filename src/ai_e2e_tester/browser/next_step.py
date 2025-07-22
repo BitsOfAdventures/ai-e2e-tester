@@ -1,12 +1,8 @@
 import logging
 from typing import Dict
 
-from ai_e2e_tester.browser.actions.back_action import BackAction
+from ai_e2e_tester.browser.actions import ACTION_REGISTRY
 from ai_e2e_tester.browser.actions.browser_action import BrowserAction
-from ai_e2e_tester.browser.actions.click_action import ClickAction
-from ai_e2e_tester.browser.actions.scroll_action import ScrollAction
-from ai_e2e_tester.browser.actions.type_action import TypeAction
-from ai_e2e_tester.browser.actions.wait_action import WaitAction
 
 logger = logging.getLogger('ai-e2e-tester.browser.next_step')
 
@@ -14,44 +10,66 @@ logger = logging.getLogger('ai-e2e-tester.browser.next_step')
 class NextStep:
     reason: str
     browser_action: BrowserAction | None = None
-    action_feedback: str = None
+    action_feedback: Dict[str, str] = {}
 
     def __init__(self, reason: str, data: Dict):
         self.reason = reason
         self.browser_action = self._get_action(data)
 
-    def __str__(self):
-        if self.browser_action:
-            return f"Executed {self.browser_action} with result {self.action_feedback}"
-        return "No browser action to run."
+    @classmethod
+    def get_state_snapshot(cls, page):
+        return {
+            "url": page.url,
+            "content": page.content()
+        }
+
+    @classmethod
+    def compare_state(cls, before, after):
+        if after["url"] != before["url"]:
+            return "Navigated to new URL."
+        elif after["content"] != before["content"]:
+            return "Page content updated."
+        else:
+            return "No visible change detected."
 
     def run(self, page):
         logger.info(f"Reasoning for Next Action: {self.reason}")
-        self.action_feedback = self.browser_action.run(page=page)
+        before = self.get_state_snapshot(page)
+        result_msg = self.browser_action.run(page=page)
+        after = self.get_state_snapshot(page)
+        state_msg = self.compare_state(before, after)
+        self.action_feedback = {
+            "action_result": result_msg,
+            "state_change": state_msg
+        }
+
+    def get_llm_step_summary(self):
+        if self.browser_action:
+            return f"""
+            This is what you did: {self.action_feedback['action_result']}
+            This is what happened after you did it: {self.action_feedback['state_change']}
+            This is why you did this action: {self.reason}
+            """
+        return "There was no more actions to do."
 
     @classmethod
     def _get_action(cls, next_step: Dict) -> BrowserAction | None:
         """
-        @todo rewrite for better extensibility
+        Instantiates the action object.
         :param next_step:
         :return:
         """
-        action_name = next_step['action']
-        if action_name == 'click':
-            return ClickAction(target_text=next_step["target_text"])
-        elif action_name == 'type':
-            return TypeAction(target_text=next_step["target_text"], value=next_step["value"])
-        elif action_name == 'scroll':
-            return ScrollAction()
-        elif action_name == 'back':
-            return BackAction()
-        elif action_name =='wait':
-            return WaitAction(wait_time_sec=next_step["wait_time_sec"])
-        elif action_name == 'done':
+        action_type = next_step.get("action")
+        action_class = ACTION_REGISTRY.get(action_type)
+
+        if action_type == 'done':
+            logger.info("The LLM has decided that there is nothing more to do.")
             return None
-        else:
-            logger.warning(f"Unknown action name:{action_name}")
+
+        if not action_class:
+            logger.warning(f"Unknown action type:{action_type}")
             return None
+        return action_class(**{k: v for k, v in next_step.get('params', {}).items()})
 
     @classmethod
     def from_json(cls, data: Dict, reason: str):

@@ -2,7 +2,9 @@ import logging
 import time
 from collections import defaultdict
 from typing import List, Dict
+from urllib.parse import urlparse, urlunparse
 
+from ai_e2e_tester.browser.actions import ACTION_REGISTRY
 from ai_e2e_tester.browser.session import BrowserSession
 from ai_e2e_tester.browser.visited_page import VisitedPage
 from ai_e2e_tester.llm.openai import OpenAiWrapper
@@ -17,13 +19,12 @@ class TestingAgent:
     The TestingAgent is an intermediary allowing the LLM to use the web browser.
     """
 
-    def __init__(self, url, api_key, config_path):
+    def __init__(self, url, config_path):
 
         self.url = url
-        self.api_key = api_key
         self.config = load_config(config_path)
         self.prompt_template = self.config['prompts']['main']
-        self.llm = OpenAiWrapper(api_key, self.prompt_template)
+        self.llm = OpenAiWrapper(self.prompt_template)
 
         self.reporter = ConsoleReporter()
 
@@ -52,7 +53,8 @@ class TestingAgent:
                 page_url=browser_session.url,
                 page_html=text,
                 screenshot_b64=screenshot_b64,
-                context=self._generate_llm_context()
+                context=self._generate_llm_context(),
+                available_actions=self._generate_llm_available_actions()
             )
 
             visited_page = VisitedPage.from_json(browser_session.page, result)
@@ -72,20 +74,27 @@ class TestingAgent:
         self.reporter.print_report(grouped_visits)
 
     def _get_grouped_visits(self) -> Dict[str, List[VisitedPage]]:
+        """
+        Groups all visits from the same URL together.
+        Ignores anchors.
+        :return:
+        """
         grouped_visits = defaultdict(list)
         for page in self.visited_pages:
-            grouped_visits[page.page_url].append(page)
+            parts = urlparse(page.page_url)
+            clean_url = urlunparse(parts._replace(fragment=''))
+            grouped_visits[clean_url].append(page)
         return grouped_visits
 
-    def _get_past_visits_for_url(self, url: str) -> List[VisitedPage]:
-        return self._get_grouped_visits().get(url)
+    def _generate_llm_context(self) -> str:
+        return "\n".join(visited_page.get_llm_visit_summary() for visited_page in self.visited_pages)
 
     @classmethod
-    def _generate_llm_visit_summary(cls, visited_page: VisitedPage) -> str:
-        return f"""
-        You visited the URL {visited_page.page_url}. 
-        You found these bugs: {visited_page.bugs} and provided these suggestions: {visited_page.suggestions}. 
-        You decided to perform this action: {visited_page.next_step}"""
-
-    def _generate_llm_context(self) -> str:
-        return "\nthen\n".join([self._generate_llm_visit_summary(visited_page) for visited_page in self.visited_pages])
+    def _generate_llm_available_actions(cls) -> str:
+        """
+        Explains to the LLM which actions it can do on the webpage.
+        :return:
+        """
+        return "\n".join(
+            action_cls.describe_for_llm() for action_cls in ACTION_REGISTRY.values()
+        )

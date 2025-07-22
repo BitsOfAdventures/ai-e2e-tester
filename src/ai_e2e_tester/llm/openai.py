@@ -1,5 +1,6 @@
 import json
 import logging
+import os
 from typing import Dict
 
 import openai
@@ -15,25 +16,32 @@ class OpenAiWrapper(AiWrapper):
     Currently only OpenAI is supported.
     """
 
-    def __init__(self, api_key, user_prompt_template, max_tokens=400):
+    def __init__(self, user_prompt_template, max_tokens=400):
         self.max_tokens = max_tokens
         self.user_prompt_template = user_prompt_template
+
+        api_key = os.environ.get("OPENAI_API_KEY")
+        if not api_key:
+            raise Exception("No API key found. Please set the OPENAI_API_KEY environment variable.")
+
         self.client = openai.OpenAI(api_key=api_key)
 
-    def run(self, page_url: str, page_html: str, screenshot_b64, context: str) -> Dict:
+    def run(self, page_url: str, page_html: str, screenshot_b64, context: str, available_actions: str) -> Dict:
         """
         @todo Add system prompt to config file
         :param page_url:
         :param context:
         :param page_html:
         :param screenshot_b64:
+        :param available_actions
         :return:
         """
 
         user_prompt = self.user_prompt_template.format(
             page_url=page_url,
             page_html=page_html,
-            context=context
+            context=context,
+            available_actions=available_actions
         )
 
         response = self.client.chat.completions.create(
