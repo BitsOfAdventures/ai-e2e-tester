@@ -62,6 +62,7 @@ class TestingAgent:
 
             if visited_page.has_next_step():
                 visited_page.run_next_step(browser_session)
+                logger.info(visited_page.next_step.get_feedback_summary())
             else:
                 logger.info("The LLM has decided that there is nothing more to do.")
                 break

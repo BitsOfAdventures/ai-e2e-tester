@@ -10,7 +10,6 @@ class BackAction(BrowserAction):
     description = 'Navigate back to the previous page.'
 
     def run(self, page) -> str:
-        logger.info(f'Navigating back to previous page.')
         page.go_back()
         page.wait_for_load_state('load')
         return f"Navigated back to previous page."

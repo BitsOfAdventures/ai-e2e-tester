@@ -14,9 +14,7 @@ class HoverAction(BrowserElementAction):
 
     def run(self, page) -> str:
         el = self.get_element(page)
-        logger.info(f'→ Hovering over: {self.target_text}')
         if not el:
-            logger.warning(f'Could not hover over {self.target_text}')
             return f'Could not find element to hover: "{self.target_text}"'
 
         el.hover()

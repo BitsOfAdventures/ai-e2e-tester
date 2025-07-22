@@ -19,10 +19,8 @@ class TypeAction(BrowserElementAction):
 
     def run(self, page) -> str:
         el = self.get_element(page)
-        logger.info(f'→ Typing in: {self.target_text} value: {self.value}')
 
         if not el:
-            logger.warning(f'Could not type text into {self.target_text}')
             return f'Could not find input for "{self.target_text}"'
 
         el.type(self.value)

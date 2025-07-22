@@ -43,7 +43,10 @@ class NextStep:
             "state_change": state_msg
         }
 
-    def get_llm_step_summary(self):
+    def get_feedback_summary(self) -> str:
+        return f"{self.action_feedback['action_result']} → {self.action_feedback['state_change']}"
+
+    def get_llm_step_summary(self) -> str:
         if self.browser_action:
             return f"""
             This is what you did: {self.action_feedback['action_result']}
