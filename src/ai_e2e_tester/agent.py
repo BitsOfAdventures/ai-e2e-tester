@@ -23,8 +23,7 @@ class TestingAgent:
 
         self.url = url
         self.config = load_config(config_path)
-        self.prompt_template = self.config['prompts']['main']
-        self.llm = OpenAiWrapper(self.prompt_template)
+        self.llm = OpenAiWrapper(prompts=self.config['prompts'])
 
         self.reporter = ConsoleReporter()
 
