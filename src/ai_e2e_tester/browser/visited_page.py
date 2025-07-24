@@ -13,8 +13,7 @@ class VisitedPage:
     """
     page_url: str
     summary: str
-    suggestions: List[str]
-    bugs: List[str]
+    feedback: List[Dict[str, str]]
     next_step: NextStep
 
     def run_next_step(self, browser_session: BrowserSession):
@@ -27,18 +26,16 @@ class VisitedPage:
         return f"""
         Visited page at URL {self.page_url}.
         Page summary: {self.summary} 
-        You found these bugs: {self.bugs} and provided these suggestions: {self.suggestions}. 
-        {self.next_step.get_llm_step_summary()}"""
+        You provided this feedback: {self.feedback}. 
+        You decided to do this:
+            {self.next_step.get_llm_step_summary()}
+        """
 
     @classmethod
     def from_json(cls, page, result: Dict) -> "VisitedPage":
         return VisitedPage(
             page_url=page.url,
             summary=result.get("summary"),
-            next_step=NextStep.from_json(
-                result.get("next_step", {"action": "done"}),
-                result.get("reason", "")
-            ),
-            bugs=result.get("bugs", []),
-            suggestions=result.get("suggestions", [])
+            next_step=NextStep.from_json(result.get("next_step")),
+            feedback=result.get("feedback", []),
         )
