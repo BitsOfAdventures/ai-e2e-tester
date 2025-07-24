@@ -16,7 +16,7 @@ class OpenAiWrapper(AiWrapper):
     Currently only OpenAI is supported.
     """
 
-    def __init__(self, prompts:Dict[str, str], max_tokens=400):
+    def __init__(self, prompts:Dict[str, str], max_tokens=800):
         self.max_tokens = max_tokens
         self.prompts = prompts
 
@@ -28,7 +28,7 @@ class OpenAiWrapper(AiWrapper):
 
     def run(self, page_url: str, page_html: str, screenshot_b64, context: str, available_actions: str) -> Dict:
         """
-        @todo Add system prompt to config file
+
         :param page_url:
         :param context:
         :param page_html:
