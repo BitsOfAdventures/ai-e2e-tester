@@ -12,8 +12,8 @@ class NextStep:
     browser_action: BrowserAction | None = None
     action_feedback: Dict[str, str] = {}
 
-    def __init__(self, reason: str, data: Dict):
-        self.reason = reason
+    def __init__(self, data: Dict):
+        self.reason = data.get('reason')
         self.browser_action = self._get_action(data)
 
     @classmethod
@@ -46,12 +46,15 @@ class NextStep:
     def get_feedback_summary(self) -> str:
         return f"{self.action_feedback['action_result']} → {self.action_feedback['state_change']}"
 
+    def update_action_state_change(self, state_change: str):
+        self.action_feedback['state_change'] = state_change
+
     def get_llm_step_summary(self) -> str:
         if self.browser_action:
             return f"""
-            This is what you did: {self.action_feedback['action_result']}
-            This is what happened after you did it: {self.action_feedback['state_change']}
-            This is why you did this action: {self.reason}
+                Action: {self.action_feedback['action_result']}
+                Outcome: {self.action_feedback['state_change']}
+                Reason: {self.reason}
             """
         return "There was no more actions to do."
 
@@ -75,11 +78,10 @@ class NextStep:
         return action_class(**{k: v for k, v in next_step.get('params', {}).items()})
 
     @classmethod
-    def from_json(cls, data: Dict, reason: str):
+    def from_json(cls, data: Dict):
         """
 
-        :param data: Ex: {"action": "click", "target_text": "Get Started"}
-        :param reason:
+        :param data: Ex: {"action": "click", "params":{"target_text": "Get Started"}, "reason":"..."}
         :return:
         """
-        return NextStep(reason=reason, data=data)
+        return NextStep(data=data)
