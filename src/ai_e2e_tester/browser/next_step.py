@@ -51,11 +51,7 @@ class NextStep:
 
     def get_llm_step_summary(self) -> str:
         if self.browser_action:
-            return f"""
-                Action: {self.action_feedback['action_result']}
-                Outcome: {self.action_feedback['state_change']}
-                Reason: {self.reason}
-            """
+            return f"{self.action_feedback['action_result']} → {self.action_feedback['state_change']}"
         return "There was no more actions to do."
 
     @classmethod
