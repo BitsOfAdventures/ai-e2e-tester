@@ -5,6 +5,7 @@ from typing import List, Dict
 from urllib.parse import urlparse, urlunparse
 
 from ai_e2e_tester.browser.actions import ACTION_REGISTRY
+from ai_e2e_tester.browser.guards.domain_guard import ensure_stay_on_domain
 from ai_e2e_tester.browser.session import BrowserSession
 from ai_e2e_tester.browser.visited_page import VisitedPage
 from ai_e2e_tester.llm.openai import OpenAiWrapper
@@ -38,11 +39,6 @@ class TestingAgent:
 
         for step_idx in range(max_steps):
 
-            # Guard BEFORE LLM
-            # @todo Inform LLM that we navigated back after leaving domain.
-            if not browser_session.ensure_stay_on_domain():
-                break
-
             logger.info(f'[Step {step_idx + 1}] On Page: {browser_session.url}')
 
             text = browser_session.get_page_html()
@@ -57,15 +53,16 @@ class TestingAgent:
             )
 
             visited_page = VisitedPage.from_json(browser_session.page, result)
-            logger.info(f'{visited_page.summary}')
             self.visited_pages.append(visited_page)
 
             if visited_page.has_next_step():
                 visited_page.run_next_step(browser_session)
+                ensure_stay_on_domain(browser_session, visited_page)
                 logger.info(visited_page.next_step.get_feedback_summary())
             else:
                 logger.info("The LLM has decided that there is nothing more to do.")
                 break
+
             time.sleep(self.wait_between_steps)
 
         browser_session.close()

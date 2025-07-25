@@ -44,42 +44,15 @@ class BrowserSession:
         self.browser.close()
         self.playwright.stop()
 
-    def ensure_stay_on_domain(self) -> bool:
-        """
-        If AI navigated out of the starting domain, we go back.
-        Returning true if successfully returned back.
-        Returning false if could not get back to original domain.
-        :return:
-        """
-        main_domain = self.get_domain(self.start_url)
-        curr_domain = self.get_current_domain()
-        if curr_domain != main_domain:
-            logger.debug(
-                f"❗ Left main domain: {curr_domain} (current URL: {self.url}). Trying to go back to previous page in browser history."
-            )
-            try:
-                logger.info('External domain. Going back to website.')
-                self.go_back()
-                # Check again
-                curr_domain = self.get_current_domain()
-                if curr_domain != main_domain:
-                    # @todo Directly navigate to main domain page
-                    logger.error("❗ Still not on main domain after going back. Ending test here.")
-                    return False
-                else:
-                    logger.debug(f"✅ Successfully returned to {self.url}")
-                    return True
-            except Exception as e:
-                logger.error("Error going back in browser history:", e)
-                return False
-        return True
-
     @property
     def url(self):
         return self.page.url
 
     def get_current_domain(self):
         return self.get_domain(self.url)
+
+    def get_start_domain(self):
+        return self.get_domain(self.start_url)
 
     @classmethod
     def get_domain(cls, url):
