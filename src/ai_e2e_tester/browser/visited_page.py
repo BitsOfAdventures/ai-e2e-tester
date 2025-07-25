@@ -22,12 +22,15 @@ class VisitedPage:
     def has_next_step(self):
         return self.next_step.browser_action is not None
 
+    def get_llm_condensed_feedback(self):
+        return ', '.join([feedback['details'] for feedback in self.feedback])
+
     def get_llm_visit_summary(self) -> str:
         return f"""
-        Visited page at URL {self.page_url}.
-        Page summary: {self.summary} 
-        You provided this feedback: {self.feedback}. 
-        You decided to do this:
+        Visited page: {self.page_url}.
+        Already reported: {self.get_llm_condensed_feedback()}.
+        Avoid reporting the same issue again. 
+        Actions taken:
             {self.next_step.get_llm_step_summary()}
         """
 
