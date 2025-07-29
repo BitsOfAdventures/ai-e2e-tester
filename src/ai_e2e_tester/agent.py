@@ -79,7 +79,8 @@ class TestingAgent:
         grouped_visits = defaultdict(list)
         for page in self.visited_pages:
             parts = urlparse(page.page_url)
-            clean_url = urlunparse(parts._replace(fragment=''))
+            normalized = parts._replace(query='', fragment='')
+            clean_url = urlunparse(normalized)
             grouped_visits[clean_url].append(page)
         return grouped_visits
 
