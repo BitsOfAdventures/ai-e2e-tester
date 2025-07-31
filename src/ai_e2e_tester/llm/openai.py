@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from typing import Dict
+from typing import Dict, List
 
 import openai
 
@@ -16,7 +16,7 @@ class OpenAiWrapper(AiWrapper):
     Currently only OpenAI is supported.
     """
 
-    def __init__(self, prompts:Dict[str, str], max_tokens=800):
+    def __init__(self, prompts: Dict[str, str], max_tokens=800):
         self.max_tokens = max_tokens
         self.prompts = prompts
 
@@ -26,22 +26,15 @@ class OpenAiWrapper(AiWrapper):
 
         self.client = openai.OpenAI(api_key=api_key)
 
-    def run(self, page_url: str, page_html: str, screenshot_b64, context: str, available_actions: str) -> Dict:
-        """
-
-        :param page_url:
-        :param context:
-        :param page_html:
-        :param screenshot_b64:
-        :param available_actions
-        :return:
-        """
+    def run(self, page_url: str, page_html: str, screenshot_b64, console_logs: List, context: str,
+            available_actions: str) -> Dict:
 
         system_prompt = self.prompts['system']
 
         user_prompt = self.prompts['user'].format(
             page_url=page_url,
             page_html=page_html,
+            console_logs=console_logs,
             context=context,
             available_actions=available_actions
         )
