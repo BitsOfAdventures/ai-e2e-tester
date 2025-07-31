@@ -21,6 +21,9 @@ class BrowserSession:
         self.page = self.browser.new_page()
         self.start_url = start_url
 
+        if self.start_url:
+            self.goto_url(self.start_url)
+
     def goto_url(self, url):
         self.page.goto(url)
         self.page.wait_for_load_state('load')
@@ -57,3 +60,9 @@ class BrowserSession:
     @classmethod
     def get_domain(cls, url):
         return urlparse(url).netloc.lower()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
