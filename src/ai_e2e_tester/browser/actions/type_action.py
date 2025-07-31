@@ -24,4 +24,4 @@ class TypeAction(BrowserElementAction):
             return f'Could not find input for "{self.target_text}"'
 
         el.type(self.value)
-        return f"Typed {self.value} into {self.target_text}"
+        return f'Typed "{self.value}" into field "{self.target_text}"'
