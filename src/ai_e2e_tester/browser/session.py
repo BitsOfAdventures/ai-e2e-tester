@@ -4,6 +4,8 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 
+from ai_e2e_tester.browser.html_optimizer import HtmlOptimizer
+
 logger = logging.getLogger('ai-e2e-tester.browser')
 
 
@@ -19,18 +21,23 @@ class BrowserSession:
         self.playwright = sync_playwright().start()
         self.browser = self.playwright.chromium.launch(headless=headless)
         self.page = self.browser.new_page()
-        self.start_url = start_url
 
+        self.console_messages = []
+        self._attach_console_logging()
+
+        self.html_optimizer = HtmlOptimizer()
+
+        self.start_url = start_url
         if self.start_url:
             self.goto_url(self.start_url)
 
     def goto_url(self, url):
         self.page.goto(url)
-        self.page.wait_for_load_state('load')
+        self.page.wait_for_load_state('networkidle')
 
     def go_back(self):
         self.page.go_back()
-        self.page.wait_for_load_state('load')
+        self.page.wait_for_load_state('networkidle')
 
     def get_page_text(self) -> str:
         return self.page.evaluate("() => document.body.innerText")
@@ -38,10 +45,25 @@ class BrowserSession:
     def get_page_html(self) -> str:
         return self.page.content()
 
+    def get_optimized_html(self) -> str:
+        return self.html_optimizer.get_optimized_html(self.page)
+
     def get_screenshot(self, path):
-        self.page.screenshot(path=path)
-        with open(path, "rb") as f:
-            return base64.b64encode(f.read()).decode('utf-8')
+        screenshot_bytes = self.page.screenshot(path=path)
+        return base64.b64encode(screenshot_bytes).decode('utf-8')
+
+    def get_console_messages(self):
+        """
+        Return warnings/errors from console.
+        """
+        return list(self.console_messages)
+
+    def _attach_console_logging(self):
+        def on_console_message(msg):
+            if msg.type in ("warning", "error"):
+                self.console_messages.append({"type": msg.type, "text": msg.text})
+
+        self.page.on("console", on_console_message)
 
     def close(self):
         self.browser.close()
