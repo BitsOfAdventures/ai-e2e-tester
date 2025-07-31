@@ -23,7 +23,7 @@ class ConsoleReporter:
             seen = set()
             for visited_page in visited_pages:
                 for item in visited_page.feedback:
-                    signature = (item.get("category"), item.get("name"), item.get("details"))
+                    signature = item.get("details")
                     if signature not in seen:
                         seen.add(signature)
                         self.print_feedback_item(item)
