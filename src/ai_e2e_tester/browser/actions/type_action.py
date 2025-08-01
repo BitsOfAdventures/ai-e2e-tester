@@ -1,5 +1,6 @@
 import logging
 
+from ai_e2e_tester.browser.actions.action_feedback import ActionFeedback
 from ai_e2e_tester.browser.actions.element_action import BrowserElementAction
 
 logger = logging.getLogger('ai-e2e-tester.browser.actions.type')
@@ -17,11 +18,11 @@ class TypeAction(BrowserElementAction):
         super().__init__(target_text)
         self.value = value
 
-    def run(self, page) -> str:
+    def run(self, page) -> ActionFeedback:
         el = self.get_element(page)
 
         if not el:
-            return f'Could not find input for "{self.target_text}"'
+            return ActionFeedback(f'Could not type. Could not find input for "{self.target_text}"', False)
 
         el.type(self.value)
-        return f'Typed "{self.value}" into field "{self.target_text}"'
+        return ActionFeedback(f'Typed "{self.value}" into field "{self.target_text}"')

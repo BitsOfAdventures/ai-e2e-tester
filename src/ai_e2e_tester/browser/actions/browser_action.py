@@ -4,6 +4,8 @@ from typing import Dict
 
 from playwright.sync_api import Page
 
+from ai_e2e_tester.browser.actions.action_feedback import ActionFeedback
+
 logger = logging.getLogger('ai-e2e-tester.browser.actions')
 
 
@@ -17,7 +19,7 @@ class BrowserAction(ABC):
     # Describing to the LLM which input fields this action needs and how to format them.
     input_fields: Dict[str, str] = {}
 
-    def run(self, page: Page) -> str:
+    def run(self, page: Page) -> ActionFeedback:
         """
         Runs an action in the browser.
         :param page: Current page in the browser.
@@ -42,3 +44,5 @@ class BrowserAction(ABC):
                 doc += f'    - "{k}": {desc}\n'
         return doc
 
+    def __str__(self):
+        return 'Browser Action'
