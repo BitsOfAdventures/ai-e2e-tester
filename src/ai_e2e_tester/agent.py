@@ -48,7 +48,7 @@ class TestingAgent:
             system_prompt = self._get_system_prompt()
             screenshot_b64 = browser_session.get_screenshot(path=f"reports/screenshot_{step_idx + 1}.png")
 
-            self._save_report(f"prompt-{step_idx}.txt", user_prompt)
+            self._save_report(f"prompt-{step_idx + 1}.txt", user_prompt)
 
             result = self.llm.run(system_prompt, user_prompt, screenshot_b64)
 
@@ -61,6 +61,7 @@ class TestingAgent:
             self.visited_pages.append(visited_page)
 
             if visited_page.has_next_step():
+                browser_session.clear_console_messages()
                 visited_page.run_next_step(browser_session)
                 ensure_stay_on_domain(browser_session, visited_page)
                 logger.info(visited_page.next_step.get_feedback_summary())

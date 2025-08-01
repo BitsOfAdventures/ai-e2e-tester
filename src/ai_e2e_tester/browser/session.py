@@ -4,7 +4,7 @@ from urllib.parse import urlparse
 
 from playwright.sync_api import sync_playwright
 
-from ai_e2e_tester.browser.html_optimizer import HtmlOptimizer
+from ai_e2e_tester.browser.html.html_optimizer import HtmlOptimizer
 
 logger = logging.getLogger('ai-e2e-tester.browser')
 
@@ -57,6 +57,9 @@ class BrowserSession:
         Return warnings/errors from console.
         """
         return list(self.console_messages)
+
+    def clear_console_messages(self):
+        self.console_messages = []
 
     def _attach_console_logging(self):
         def on_console_message(msg):
