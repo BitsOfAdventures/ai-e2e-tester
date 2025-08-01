@@ -2,6 +2,7 @@ import logging
 from typing import Dict
 
 from ai_e2e_tester.browser.actions import ACTION_REGISTRY
+from ai_e2e_tester.browser.actions.action_feedback import ActionFeedback
 from ai_e2e_tester.browser.actions.browser_action import BrowserAction
 
 logger = logging.getLogger('ai-e2e-tester.browser.next_step')
@@ -10,7 +11,7 @@ logger = logging.getLogger('ai-e2e-tester.browser.next_step')
 class NextStep:
     reason: str
     browser_action: BrowserAction | None = None
-    action_feedback: Dict[str, str] = {}
+    action_feedback: ActionFeedback
 
     def __init__(self, data: Dict):
         self.reason = data.get('reason')
@@ -34,24 +35,27 @@ class NextStep:
 
     def run(self, page):
         logger.info(f"Reasoning for Next Action: {self.reason}")
-        before = self.get_state_snapshot(page)
-        result_msg = self.browser_action.run(page=page)
-        after = self.get_state_snapshot(page)
-        state_msg = self.compare_state(before, after)
-        self.action_feedback = {
-            "action_result": result_msg,
-            "state_change": state_msg
-        }
+        try:
+            before = self.get_state_snapshot(page)
+            self.action_feedback = self.browser_action.run(page=page)
+            after = self.get_state_snapshot(page)
+            self.action_feedback.state_change = self.compare_state(before, after)
+        except Exception as e:
+            logger.error(f'Could not execute browser action {self.browser_action}: {e}')
+            self.action_feedback = ActionFeedback(
+                is_success=False,
+                result=f'Could not execute browser action {self.browser_action}'
+            )
 
     def get_feedback_summary(self) -> str:
-        return f"{self.action_feedback['action_result']} → {self.action_feedback['state_change']}"
+        return f"{self.action_feedback.result} → {self.action_feedback.state_change}"
 
     def update_action_state_change(self, state_change: str):
-        self.action_feedback['state_change'] = state_change
+        self.action_feedback.state_change = state_change
 
     def get_llm_step_summary(self) -> str:
         if self.browser_action:
-            return f"{self.action_feedback['action_result']} → {self.action_feedback['state_change']}"
+            return f"{self.action_feedback.result} → {self.action_feedback.state_change}"
         return "There was no more actions to do."
 
     @classmethod
