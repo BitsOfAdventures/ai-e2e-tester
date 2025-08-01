@@ -1,24 +1,18 @@
 from typing import Dict
 
-from playwright.sync_api import ElementHandle, Page
+from playwright.sync_api import ElementHandle, Page, FloatRect
 
 from ai_e2e_tester.browser.html.visibility.visibility_check import VisibilityCheck
 
 
 class ViewportIntersectionCheck(VisibilityCheck):
 
-    def run(self, el: ElementHandle, page: Page, context: dict) -> tuple[bool, dict]:
-        box = el.bounding_box()
-        if not box:
-            return False, context
-
+    def is_visible(self, el: ElementHandle, box: FloatRect, page: Page) -> bool:
         viewport = self._get_viewport_size(page)
         if not self._is_intersecting(box, viewport):
-            return False, context
+            return False
 
-        # Update context with useful info
-        context = {**context, "box": box}
-        return True, context
+        return True
 
     @classmethod
     def _get_viewport_size(cls, page: Page) -> Dict:
