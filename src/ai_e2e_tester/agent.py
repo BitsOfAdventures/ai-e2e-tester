@@ -109,13 +109,10 @@ class TestingAgent:
             f.write(content)
 
     def _get_user_prompt(self, browser_session: BrowserSession) -> str:
-        page_html = browser_session.get_optimized_html()
-        console_logs = browser_session.get_console_messages()
-
         return self.config['prompts']['user'].format(
             page_url=browser_session.url,
-            page_html=page_html,
-            console_logs=console_logs,
+            page_html=browser_session.get_optimized_html(),
+            console_logs=browser_session.get_console_messages(),
             context=self._generate_llm_context(),
             available_actions=self._generate_llm_available_actions()
         )
