@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from typing import Dict, List
+from typing import Dict
 
 import openai
 
@@ -26,18 +26,7 @@ class OpenAiWrapper(AiWrapper):
 
         self.client = openai.OpenAI(api_key=api_key)
 
-    def run(self, page_url: str, page_html: str, screenshot_b64, console_logs: List, context: str,
-            available_actions: str) -> Dict:
-
-        system_prompt = self.prompts['system']
-
-        user_prompt = self.prompts['user'].format(
-            page_url=page_url,
-            page_html=page_html,
-            console_logs=console_logs,
-            context=context,
-            available_actions=available_actions
-        )
+    def run(self, system_prompt: str, user_prompt: str, screenshot_b64) -> Dict:
 
         response = self.client.chat.completions.create(
             model="gpt-4o",

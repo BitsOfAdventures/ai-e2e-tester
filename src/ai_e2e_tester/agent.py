@@ -1,4 +1,5 @@
 import logging
+import os
 import time
 from collections import defaultdict
 from typing import List, Dict
@@ -35,22 +36,26 @@ class TestingAgent:
     def run(self, max_steps: int):
         logger.info(f"Test started. Max steps: {max_steps}")
         browser_session = BrowserSession(self.url, headless=True)
-        browser_session.goto_url(self.url)
+
+        goal = None
+        expectation = None
 
         for step_idx in range(max_steps):
 
             logger.info(f'[Step {step_idx + 1}] On Page: {browser_session.url}')
 
-            text = browser_session.get_page_html()
+            user_prompt = self._get_user_prompt(browser_session)
+            system_prompt = self._get_system_prompt()
             screenshot_b64 = browser_session.get_screenshot(path=f"reports/screenshot_{step_idx + 1}.png")
 
-            result = self.llm.run(
-                page_url=browser_session.url,
-                page_html=text,
-                screenshot_b64=screenshot_b64,
-                context=self._generate_llm_context(),
-                available_actions=self._generate_llm_available_actions()
-            )
+            self._save_report(f"prompt-{step_idx}.txt", user_prompt)
+
+            result = self.llm.run(system_prompt, user_prompt, screenshot_b64)
+
+            goal = result.get('updated_goal') or result.get('goal')
+            expectation = result.get('expected_vs_actual')
+            logger.info(f'Current goal: {goal}')
+            logger.debug(f'Current expectations: {expectation}')
 
             visited_page = VisitedPage.from_json(browser_session.page, result)
             self.visited_pages.append(visited_page)
@@ -96,3 +101,24 @@ class TestingAgent:
         return "\n".join(
             action_cls.describe_for_llm() for action_cls in ACTION_REGISTRY.values()
         )
+
+    @classmethod
+    def _save_report(cls, name: str, content: str):
+        os.makedirs('reports', exist_ok=True)
+        with open(f"reports/{name}", "w", encoding="utf-8") as f:
+            f.write(content)
+
+    def _get_user_prompt(self, browser_session: BrowserSession) -> str:
+        page_html = browser_session.get_optimized_html()
+        console_logs = browser_session.get_console_messages()
+
+        return self.config['prompts']['user'].format(
+            page_url=browser_session.url,
+            page_html=page_html,
+            console_logs=console_logs,
+            context=self._generate_llm_context(),
+            available_actions=self._generate_llm_available_actions()
+        )
+
+    def _get_system_prompt(self) -> str:
+        return self.config['prompts']['system']

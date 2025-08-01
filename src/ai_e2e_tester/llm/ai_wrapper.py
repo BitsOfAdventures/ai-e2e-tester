@@ -1,8 +1,7 @@
 from abc import ABC
-from typing import Dict, List
+from typing import Dict
 
 
 class AiWrapper(ABC):
-    def run(self, page_url: str, page_html: str, screenshot_b64, console_logs: List, context: str,
-            available_actions: str) -> Dict:
+    def run(self, system_prompt: str, user_prompt: str, screenshot_b64) -> Dict:
         pass
