@@ -30,8 +30,8 @@ class OcclusionCheck(VisibilityCheck):
             [center_x, center_y]
         )
 
-        if not is_clickable:
-            logger.info(f'Element did not pass occlusion check: {el}')
+        # if not is_clickable:
+        #     logger.info(f'Element did not pass occlusion check: {el}')
 
         return is_clickable
 
