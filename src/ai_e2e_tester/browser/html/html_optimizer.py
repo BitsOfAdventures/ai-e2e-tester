@@ -2,7 +2,7 @@ import logging
 import re
 from typing import List, Dict
 
-from playwright.sync_api import Page, ElementHandle
+from playwright.sync_api import Page, ElementHandle, FloatRect
 
 from ai_e2e_tester.browser.html.visibility.basic_check import BasicVisibilityCheck
 from ai_e2e_tester.browser.html.visibility.occlusion_check import OcclusionCheck
@@ -48,7 +48,7 @@ class HtmlOptimizer:
 
         final_size = len(visible_html)
         reduction = ((initial_size - final_size) / initial_size * 100) if initial_size > 0 else 0
-        logger.info(f"Optimized HTML size: {initial_size} -> {final_size} : Reduced by {reduction:.2f}%")
+        logger.debug(f"Optimized HTML size: {initial_size} -> {final_size} : Reduced by {reduction:.2f}%")
 
         return visible_html
 
@@ -82,7 +82,21 @@ class HtmlOptimizer:
         if not box:
             return False
 
+        if self._ignore_check(box):
+            return True
+
         return all(check.is_visible(el, box, viewport, scroll_x, scroll_y) for check in self.visibility_checks)
+
+    @classmethod
+    def _ignore_check(cls, box: FloatRect) -> bool:
+        """
+        Skip strict visibility check for Angular-style wrappers (e.g. height=0, width>0)
+        :param box:
+        :return:
+        """
+        if (box["width"] == 0) != (box["height"] == 0):
+            return True
+        return False
 
     @classmethod
     def _get_tag_and_attrs(cls, el: ElementHandle) -> tuple[str, str]:
