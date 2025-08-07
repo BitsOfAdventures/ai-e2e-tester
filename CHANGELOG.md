@@ -1,8 +1,8 @@
 ### 0.0.3
 
-- Improved feedback quality and reduced duplicated feedback
-- Optimized HTML passed to the LLM to reduce token usage
-- Better location of elements on the page based on LLM description
+- Improved feedback quality and reduced duplicated feedback.
+- Optimized HTML passed to the LLM to reduce token usage.
+- Better location of elements on the page based on LLM description.
 
 ### 0.0.2
 
