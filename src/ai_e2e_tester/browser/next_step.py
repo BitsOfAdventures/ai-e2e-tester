@@ -1,3 +1,4 @@
+import base64
 import logging
 from typing import Dict
 
@@ -21,7 +22,8 @@ class NextStep:
     def get_state_snapshot(cls, page):
         return {
             "url": page.url,
-            "content": page.content()
+            "content": page.content(),
+            "screenshot": base64.b64encode(page.screenshot(full_page=False)).decode("utf-8")
         }
 
     @classmethod
@@ -30,6 +32,8 @@ class NextStep:
             return "Navigated to new URL."
         elif after["content"] != before["content"]:
             return "Page content updated."
+        elif after["screenshot"] != before["screenshot"]:
+            return "Viewport content updated (e.g. scrolled or animated)."
         else:
             return "No visible change detected."
 
