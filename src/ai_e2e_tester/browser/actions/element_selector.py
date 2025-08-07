@@ -16,6 +16,8 @@ class ElementSelector:
             lambda t: f'text="{t}"',  # By visible text
             lambda t: f'[placeholder="{t}"]',  # By exact placeholder
             lambda t: f'input[placeholder*="{t.split()[0]}"]',  # Fallback: partial match
+            lambda t: f'[data-title="{t}"]',  # Fallback: data-title attribute
+            lambda t: f'.{t}',  # Fallback: by class name
         ]
 
     def get_element(self, target_text: str, page: Page) -> ElementHandle | None:
