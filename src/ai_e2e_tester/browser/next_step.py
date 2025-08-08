@@ -1,7 +1,9 @@
+import base64
 import logging
 from typing import Dict
 
 from ai_e2e_tester.browser.actions import ACTION_REGISTRY
+from ai_e2e_tester.browser.actions.action_feedback import ActionFeedback
 from ai_e2e_tester.browser.actions.browser_action import BrowserAction
 
 logger = logging.getLogger('ai-e2e-tester.browser.next_step')
@@ -10,17 +12,18 @@ logger = logging.getLogger('ai-e2e-tester.browser.next_step')
 class NextStep:
     reason: str
     browser_action: BrowserAction | None = None
-    action_feedback: Dict[str, str] = {}
+    action_feedback: ActionFeedback
 
-    def __init__(self, reason: str, data: Dict):
-        self.reason = reason
+    def __init__(self, data: Dict):
+        self.reason = data.get('reason')
         self.browser_action = self._get_action(data)
 
     @classmethod
     def get_state_snapshot(cls, page):
         return {
             "url": page.url,
-            "content": page.content()
+            "content": page.content(),
+            "screenshot": base64.b64encode(page.screenshot(full_page=False)).decode("utf-8")
         }
 
     @classmethod
@@ -29,27 +32,34 @@ class NextStep:
             return "Navigated to new URL."
         elif after["content"] != before["content"]:
             return "Page content updated."
+        elif after["screenshot"] != before["screenshot"]:
+            return "Viewport content updated (e.g. scrolled or animated)."
         else:
             return "No visible change detected."
 
     def run(self, page):
         logger.info(f"Reasoning for Next Action: {self.reason}")
-        before = self.get_state_snapshot(page)
-        result_msg = self.browser_action.run(page=page)
-        after = self.get_state_snapshot(page)
-        state_msg = self.compare_state(before, after)
-        self.action_feedback = {
-            "action_result": result_msg,
-            "state_change": state_msg
-        }
+        try:
+            before = self.get_state_snapshot(page)
+            self.action_feedback = self.browser_action.run(page=page)
+            after = self.get_state_snapshot(page)
+            self.action_feedback.state_change = self.compare_state(before, after)
+        except Exception as e:
+            logger.error(f'Could not execute browser action {self.browser_action}: {e}')
+            self.action_feedback = ActionFeedback(
+                is_success=False,
+                result=f'Could not execute browser action {self.browser_action}'
+            )
 
-    def get_llm_step_summary(self):
+    def get_feedback_summary(self) -> str:
+        return f"{self.action_feedback.result} → {self.action_feedback.state_change}"
+
+    def update_action_state_change(self, state_change: str):
+        self.action_feedback.state_change = state_change
+
+    def get_llm_step_summary(self) -> str:
         if self.browser_action:
-            return f"""
-            This is what you did: {self.action_feedback['action_result']}
-            This is what happened after you did it: {self.action_feedback['state_change']}
-            This is why you did this action: {self.reason}
-            """
+            return f"{self.action_feedback.result} → {self.action_feedback.state_change}"
         return "There was no more actions to do."
 
     @classmethod
@@ -72,11 +82,10 @@ class NextStep:
         return action_class(**{k: v for k, v in next_step.get('params', {}).items()})
 
     @classmethod
-    def from_json(cls, data: Dict, reason: str):
+    def from_json(cls, data: Dict):
         """
 
-        :param data: Ex: {"action": "click", "target_text": "Get Started"}
-        :param reason:
+        :param data: Ex: {"action": "click", "params":{"target_text": "Get Started"}, "reason":"..."}
         :return:
         """
-        return NextStep(reason=reason, data=data)
+        return NextStep(data=data)

@@ -16,9 +16,9 @@ class OpenAiWrapper(AiWrapper):
     Currently only OpenAI is supported.
     """
 
-    def __init__(self, user_prompt_template, max_tokens=400):
+    def __init__(self, prompts: Dict[str, str], max_tokens=800):
         self.max_tokens = max_tokens
-        self.user_prompt_template = user_prompt_template
+        self.prompts = prompts
 
         api_key = os.environ.get("OPENAI_API_KEY")
         if not api_key:
@@ -26,28 +26,12 @@ class OpenAiWrapper(AiWrapper):
 
         self.client = openai.OpenAI(api_key=api_key)
 
-    def run(self, page_url: str, page_html: str, screenshot_b64, context: str, available_actions: str) -> Dict:
-        """
-        @todo Add system prompt to config file
-        :param page_url:
-        :param context:
-        :param page_html:
-        :param screenshot_b64:
-        :param available_actions
-        :return:
-        """
-
-        user_prompt = self.user_prompt_template.format(
-            page_url=page_url,
-            page_html=page_html,
-            context=context,
-            available_actions=available_actions
-        )
+    def run(self, system_prompt: str, user_prompt: str, screenshot_b64) -> Dict:
 
         response = self.client.chat.completions.create(
             model="gpt-4o",
             messages=[
-                {"role": "system", "content": "You are a smart website tester."},
+                {"role": "system", "content": system_prompt},
                 {
                     "role": "user",
                     "content": [
