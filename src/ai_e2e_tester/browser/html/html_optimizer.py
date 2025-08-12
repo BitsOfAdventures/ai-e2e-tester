@@ -26,6 +26,10 @@ class HtmlOptimizer:
             r'\sdata-reactroot(?:="[^"]*")?',  # React root attribute
         ]
 
+        # Trimming parts of HTML that can be very large.
+        self.tags_to_trim = ['svg']
+
+        # Removing the parts of HTML the agent can not interact with.
         self.visibility_checks: List[VisibilityCheck] = [
             BasicVisibilityCheck(),
             ViewportIntersectionCheck(),
@@ -45,6 +49,9 @@ class HtmlOptimizer:
 
         for cleanup_pattern in self.html_cleanup_patterns:
             visible_html = re.sub(cleanup_pattern, '', visible_html)
+
+        for tag_to_trim in self.tags_to_trim:
+            visible_html = self.trim_large_tag(visible_html, tag_to_trim)
 
         final_size = len(visible_html)
         reduction = ((initial_size - final_size) / initial_size * 100) if initial_size > 0 else 0
@@ -116,3 +123,20 @@ class HtmlOptimizer:
           .map(n => n.textContent)
           .join('')
         """)
+
+    @classmethod
+    def trim_large_tag(cls, html: str, tag: str, max_length: int = 500) -> str:
+        """
+        Trims the inner content of specified tag if it exceeds max_length characters.
+        Keeps the opening and closing tags intact, with a placeholder for trimmed content.
+        """
+        pattern = fr"<{tag}[^>]*>(.*?)</{tag}>"
+
+        def _trim(match):
+            inner = match.group(1)
+            if len(inner) > max_length:
+                logger.info(f'Trimming long {tag} ({len(inner)} > {max_length})')
+                return f"<{tag}>...trimmed {len(inner)} chars...</{tag}>"
+            return match.group(0)
+
+        return re.sub(pattern, _trim, html, flags=re.DOTALL | re.IGNORECASE)
