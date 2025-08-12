@@ -1,3 +1,4 @@
+import json
 import logging
 import os
 import time
@@ -37,9 +38,6 @@ class TestingAgent:
         logger.info(f"Test started. Max steps: {max_steps}")
         browser_session = BrowserSession(self.url, headless=True)
 
-        goal = None
-        expectation = None
-
         for step_idx in range(max_steps):
 
             logger.info(f'[Step {step_idx + 1}] On Page: {browser_session.url}')
@@ -50,14 +48,12 @@ class TestingAgent:
 
             self._save_report(f"prompt-{step_idx + 1}.txt", user_prompt)
 
-            result = self.llm.run(system_prompt, user_prompt, screenshot_b64)
+            self.last_result = self.llm.run(system_prompt, user_prompt, screenshot_b64)
 
-            goal = result.get('updated_goal') or result.get('goal')
-            expectation = result.get('expected_vs_actual')
-            logger.info(f'Current goal: {goal}')
-            logger.debug(f'Current expectations: {expectation}')
+            self._save_report(f"result-{step_idx + 1}.json", self.last_result)
+            logger.info(f'Current goal: {self.last_result.get("goal")}')
 
-            visited_page = VisitedPage.from_json(browser_session.page, result)
+            visited_page = VisitedPage.from_json(browser_session.page, self.last_result)
             self.visited_pages.append(visited_page)
 
             if visited_page.has_next_step():
@@ -91,7 +87,9 @@ class TestingAgent:
         return grouped_visits
 
     def _generate_llm_context(self) -> str:
-        return "\n".join(visited_page.get_llm_visit_summary() for visited_page in self.visited_pages)
+        if self.visited_pages:
+            return self.visited_pages[-1].get_llm_visit_summary()
+        return 'No context yet, this is the first visit to this website.'
 
     @classmethod
     def _generate_llm_available_actions(cls) -> str:
@@ -104,9 +102,13 @@ class TestingAgent:
         )
 
     @classmethod
-    def _save_report(cls, name: str, content: str):
-        os.makedirs('reports', exist_ok=True)
-        with open(f"reports/{name}", "w", encoding="utf-8") as f:
+    def _save_report(cls, name: str, content: str | Dict, reports_folder='debug'):
+        os.makedirs(reports_folder, exist_ok=True)
+
+        if isinstance(content, dict):
+            content = json.dumps(content, indent=2)
+
+        with open(f"{reports_folder}/{name}", "w", encoding="utf-8") as f:
             f.write(content)
 
     def _get_user_prompt(self, browser_session: BrowserSession) -> str:
