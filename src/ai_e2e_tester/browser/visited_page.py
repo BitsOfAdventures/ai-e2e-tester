@@ -12,7 +12,9 @@ class VisitedPage:
     It is used to write reports at the end.
     """
     page_url: str
-    summary: str
+    summary: str  # Summary of current page
+    context: str  # Summary of previous visited pages, actions taken by the agent, and their result
+    expectations_vs_reality: str
     feedback: List[Dict[str, str]]
     next_step: NextStep
 
@@ -26,19 +28,27 @@ class VisitedPage:
         return ', '.join([feedback['details'] for feedback in self.feedback])
 
     def get_llm_visit_summary(self) -> str:
-        return f"""
-        Visited page: {self.page_url}.
-        Already reported: {self.get_llm_condensed_feedback()}.
-        Avoid reporting the same issue again. 
-        Actions taken:
-            {self.next_step.get_llm_step_summary()}
         """
+        Returns a combination of visit context (summary of previous actions) and current action.
+        :return:
+        """
+        return '\n'.join(item for item in [self.context, "LAST ACTION:", str(self.get_visit_summary())] if item)
+
+    def get_visit_summary(self) -> Dict:
+        return {
+            "page_url": self.page_url,
+            "observation": self.get_llm_condensed_feedback(),
+            "expectations_vs_reality": self.expectations_vs_reality,
+            "action_taken": self.next_step.get_llm_step_summary()
+        }
 
     @classmethod
     def from_json(cls, page, result: Dict) -> "VisitedPage":
         return VisitedPage(
             page_url=page.url,
             summary=result.get("summary"),
+            context=result.get("context"),
+            expectations_vs_reality=result.get("expected_vs_actual"),
             next_step=NextStep.from_json(result.get("next_step")),
             feedback=result.get("feedback", []),
         )
