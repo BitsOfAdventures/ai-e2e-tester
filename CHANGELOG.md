@@ -1,3 +1,7 @@
+### 0.0.4
+
+- Improved feedback reporting
+
 ### 0.0.3
 
 - Improved feedback quality and reduced duplicated feedback.
